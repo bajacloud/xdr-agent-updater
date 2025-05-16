@@ -29,7 +29,8 @@ roleRef:
   name: xdr-agent-updater
   apiGroup: rbac.authorization.k8s.io
 
-# --- Immediate one-shot Job ---
+# --- Immediate Job ---
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -56,4 +57,3 @@ spec:
           items:
           - key: .dockerconfigjson
             path: config.json
-

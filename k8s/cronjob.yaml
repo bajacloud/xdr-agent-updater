@@ -1,6 +1,4 @@
-# -----------------------------
-# RBAC: ServiceAccount + Role + RoleBinding
-# -----------------------------
+# --- RBAC Objects ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -31,21 +29,21 @@ roleRef:
   name: xdr-agent-updater
   apiGroup: rbac.authorization.k8s.io
 
-# -----------------------------
-# CronJob
-# -----------------------------
+# --- CronJob ---
+---
 apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: xdr-agent-updater
   namespace: cortex-xdr
 spec:
-  schedule: "0 2 * * *"
+  schedule: "0 2 * * *"  # Runs daily at 2AM UTC
   jobTemplate:
     spec:
       template:
         spec:
           serviceAccountName: xdr-agent-updater
+          restartPolicy: OnFailure
           containers:
           - name: updater
             image: bajacloud/xdr-agent-updater:latest
@@ -54,7 +52,6 @@ spec:
             - name: docker-config
               mountPath: /root/.docker
               readOnly: true
-          restartPolicy: OnFailure
           volumes:
           - name: docker-config
             secret:
@@ -62,5 +59,3 @@ spec:
               items:
               - key: .dockerconfigjson
                 path: config.json
-
-
