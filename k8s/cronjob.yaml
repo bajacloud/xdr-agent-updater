@@ -1,0 +1,64 @@
+# RBAC
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: xdr-agent-updater
+  namespace: cortex-xdr
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: xdr-agent-updater
+  namespace: cortex-xdr
+rules:
+- apiGroups: ["apps"]
+  resources: ["daemonsets"]
+  verbs: ["get", "list", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: xdr-agent-updater
+  namespace: cortex-xdr
+subjects:
+- kind: ServiceAccount
+  name: xdr-agent-updater
+  namespace: cortex-xdr
+roleRef:
+  kind: Role
+  name: xdr-agent-updater
+  apiGroup: rbac.authorization.k8s.io
+
+# CronJob
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: xdr-agent-updater
+  namespace: cortex-xdr
+spec:
+  schedule: "0 2 * * *"  # Daily at 2AM UTC
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: xdr-agent-updater
+          restartPolicy: OnFailure
+          containers:
+          - name: updater
+            image: bajacloud/xdr-agent-updater:latest
+            imagePullPolicy: Always
+            env:
+            - name: DOCKER_CONFIG
+              value: /tmp/docker
+            volumeMounts:
+            - name: docker-config
+              mountPath: /tmp/docker
+              readOnly: true
+          volumes:
+          - name: docker-config
+            secret:
+              secretName: cortex-docker-secret
+              items:
+              - key: .dockerconfigjson
+                path: config.json
