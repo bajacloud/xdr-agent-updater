@@ -1,4 +1,4 @@
-# --- RBAC objects ---
+# RBAC
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -29,7 +29,7 @@ roleRef:
   name: xdr-agent-updater
   apiGroup: rbac.authorization.k8s.io
 
-# --- Immediate Job ---
+# Immediate Job
 ---
 apiVersion: batch/v1
 kind: Job
@@ -46,9 +46,12 @@ spec:
       - name: updater
         image: bajacloud/xdr-agent-updater:latest
         imagePullPolicy: Always
+        env:
+        - name: DOCKER_CONFIG
+          value: /tmp/docker
         volumeMounts:
         - name: docker-config
-          mountPath: /root/.docker
+          mountPath: /tmp/docker
           readOnly: true
       volumes:
       - name: docker-config

@@ -4,6 +4,7 @@ set -euo pipefail
 
 # Config
 NAMESPACE="cortex-xdr"
+DOCKER_CONFIG="/tmp/docker"
 IMAGE_REPO="us-central1-docker.pkg.dev/xdr-us-1002203369220/agent-docker/cortex-agent"
 DAEMONSET_NAME="cortex-agent"
 CONTAINER_NAME="cortex-agent"
