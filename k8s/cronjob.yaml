@@ -46,7 +46,7 @@ spec:
           restartPolicy: OnFailure
           containers:
           - name: updater
-            image: bajacloud/xdr-agent-updater:latest
+            image: bajacloud/xdr-agent-updater:v0.1.1
             imagePullPolicy: Always
             env:
             - name: DOCKER_CONFIG
@@ -62,4 +62,3 @@ spec:
               items:
               - key: .dockerconfigjson
                 path: config.json
-

@@ -38,13 +38,14 @@ metadata:
   namespace: cortex-xdr
 spec:
   ttlSecondsAfterFinished: 300
+  backoffLimit: 1
   template:
     spec:
       serviceAccountName: xdr-agent-updater
       restartPolicy: Never
       containers:
       - name: updater
-        image: bajacloud/xdr-agent-updater:latest
+        image: bajacloud/xdr-agent-updater:v0.1.1
         imagePullPolicy: Always
         env:
         - name: DOCKER_CONFIG
