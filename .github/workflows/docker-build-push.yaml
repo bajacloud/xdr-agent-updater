@@ -2,11 +2,18 @@ name: Build and Push Docker Image
 
 on:
   push:
+    branches:
+      - main
     tags:
-      - 'v*'  # e.g., v0.1.1, v1.0.0
-    paths-ignore:
-      - '**/README.md'
-      - 'k8s/**'
+      - 'v*'
+    paths:
+      - '**/*.sh'
+      - '**/Dockerfile'
+      - '**/*.py'
+      - '**/*.go'
+      - '**/*.js'
+      - '!**/README.md'
+      - '!k8s/**'
 
 jobs:
   docker:
@@ -25,21 +32,28 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_USERNAME }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    - name: Extract version tag
-      id: get_tag
-      run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+    - name: Set image tag
+      id: tag
+      run: |
+        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          VERSION="${GITHUB_REF#refs/tags/}"
+        else
+          DATE_TAG=$(date +'%Y%m%d-%H%M')
+          VERSION="main-${DATE_TAG}"
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
         push: true
-        tags: bajacloud/xdr-agent-updater:${{ env.TAG }}
+        tags: |
+          bajacloud/xdr-agent-updater:${{ env.VERSION }}
+          ${{ github.ref == 'refs/heads/main' && 'bajacloud/xdr-agent-updater:latest' || '' }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
     - name: Echo image tag
       run: |
-        echo "Image pushed: bajacloud/xdr-agent-updater:${{ env.TAG }}"
-
-
+        echo "Image pushed: bajacloud/xdr-agent-updater:${{ env.VERSION }}"
