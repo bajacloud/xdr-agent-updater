@@ -1,39 +1,16 @@
-# syntax=docker/dockerfile:1
-
-FROM debian:bookworm-slim AS base
+FROM bitnami/kubectl:1.33.1-debian-12-r0
 
 LABEL maintainer="toquiwokey" \
       org.opencontainers.image.title="Cortex XDR Agent Updater" \
-      org.opencontainers.image.description="Checks latest Cortex XDR agent image version and updates DaemonSet if needed" \
-      org.opencontainers.image.source="https://github.com/bajacloud/upgradertron"
+      org.opencontainers.image.description="Automatically updates XDR agent to latest version in Kubernetes" \
+      org.opencontainers.image.source="https://github.com/bajacloud/xdr-agent-updater"
 
-# Set environment
-ENV DEBIAN_FRONTEND=noninteractive
+USER 0
+RUN install_packages jq skopeo
 
-# Install required tools
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        curl \
-        bash \
-        jq \
-        skopeo \
-        kubectl \
-        ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create a non-root user
-RUN useradd --system --create-home --shell /bin/bash updater
-
-# Copy the script
 COPY xdr-agent-updater.sh /usr/local/bin/xdr-agent-updater.sh
+RUN chmod +x /usr/local/bin/xdr-agent-updater.sh
 
-# Set permissions
-RUN chmod +x /usr/local/bin/xdr-agent-updater.sh && \
-    chown updater:updater /usr/local/bin/xdr-agent-updater.sh
-
-# Switch to non-root user (optional – can run as root if needed for kubectl access)
-USER updater
-
-# Set entrypoint
+USER 1001
 ENTRYPOINT ["/usr/local/bin/xdr-agent-updater.sh"]
+
