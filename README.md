@@ -39,14 +39,16 @@ The container is designed to run as a Kubernetes CronJob (or on-demand Job) with
 ## Quick Way To Run, ad-hoc
 kubectl -n cortex-xdr delete job xdr-agent-updater-manual --ignore-not-found && \
 kubectl -n cortex-xdr apply -f https://raw.githubusercontent.com/bajacloud/xdr-agent-updater/main/k8s/job.yaml && \
-sleep 2 && \
+kubectl -n cortex-xdr wait --for=condition=ready pod -l job-name=xdr-agent-updater-manual --timeout=60s && \
 kubectl -n cortex-xdr logs -f job/xdr-agent-updater-manual
+
 
 ## To run as a daily cronjob
 kubectl -n cortex-xdr apply -f https://raw.githubusercontent.com/bajacloud/xdr-agent-updater/main/k8s/cronjob.yaml && \
 kubectl -n cortex-xdr create job --from=cronjob/xdr-agent-updater xdr-agent-updater-now && \
-sleep 2 && \
+kubectl -n cortex-xdr wait --for=condition=ready pod -l job-name=xdr-agent-updater-now --timeout=60s && \
 kubectl -n cortex-xdr logs -f job/xdr-agent-updater-now
+
 
 
 
